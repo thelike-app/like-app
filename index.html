@@ -67,7 +67,6 @@
       color: #ccc;
     }
 
-    /* Tablo stili */
     table {
       border-collapse: collapse;
       width: 80%;
@@ -91,8 +90,8 @@
   <h1>LIKE</h1>
 
   <div class="search-section">
-    <input type="text" id="playerInput" placeholder="Enter player name...">
-    <button onclick="showStats()">ANALYZE</button>
+    <input type="text" id="playerInput" placeholder="Enter NBA player name...">
+    <button onclick="getPlayerStats()">ANALYZE</button>
     <div class="tagline">Ask less. Get more.</div>
   </div>
 
@@ -103,19 +102,36 @@
   </footer>
 
   <script>
-    function showStats() {
-      const player = document.getElementById("playerInput").value || "LeBron James";
-      
-      // Test verisi
-      const stats = [
-        { game: 1, points: 25, assists: 7, rebounds: 8, threes: 3 },
-        { game: 2, points: 30, assists: 9, rebounds: 10, threes: 4 },
-        { game: 3, points: 22, assists: 6, rebounds: 7, threes: 2 },
-        { game: 4, points: 18, assists: 8, rebounds: 5, threes: 1 },
-        { game: 5, points: 28, assists: 10, rebounds: 9, threes: 5 },
-      ];
+    async function getPlayerStats() {
+      const playerName = document.getElementById("playerInput").value.trim();
+      if (!playerName) {
+        alert("Please enter a player name");
+        return;
+      }
 
-      let table = `<h2 style="text-align:center">${player} - Last 5 Games</h2>`;
+      // 1. Oyuncu ID'sini bul
+      const searchResponse = await fetch(`https://www.balldontlie.io/api/v1/players?search=${playerName}`);
+      const searchData = await searchResponse.json();
+
+      if (searchData.data.length === 0) {
+        alert("Player not found");
+        return;
+      }
+
+      const playerId = searchData.data[0].id;
+      const playerFullName = `${searchData.data[0].first_name} ${searchData.data[0].last_name}`;
+
+      // 2. Son 10 maç istatistiklerini al
+      const gamesResponse = await fetch(`https://www.balldontlie.io/api/v1/stats?player_ids[]=${playerId}&per_page=10`);
+      const gamesData = await gamesResponse.json();
+
+      if (gamesData.data.length === 0) {
+        alert("No recent games found");
+        return;
+      }
+
+      // 3. Tabloyu oluştur
+      let table = `<h2 style="text-align:center">${playerFullName} - Last 10 Games</h2>`;
       table += `<table>
                   <tr>
                     <th>Game</th>
@@ -125,13 +141,13 @@
                     <th>3 Pointers</th>
                   </tr>`;
 
-      stats.forEach(s => {
+      gamesData.data.forEach((game, index) => {
         table += `<tr>
-                    <td>${s.game}</td>
-                    <td>${s.points}</td>
-                    <td>${s.assists}</td>
-                    <td>${s.rebounds}</td>
-                    <td>${s.threes}</td>
+                    <td>${index + 1}</td>
+                    <td>${game.pts}</td>
+                    <td>${game.ast}</td>
+                    <td>${game.reb}</td>
+                    <td>${game.fg3m}</td>
                   </tr>`;
       });
 

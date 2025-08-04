@@ -17,14 +17,12 @@
       min-height: 100vh;
     }
 
-    /* Üstteki LIKE yazısı */
     h1 {
       font-size: 6rem;
       text-align: center;
       margin-top: 80px;
     }
 
-    /* Ortadaki arama alanı ve buton */
     .search-section {
       display: flex;
       flex-direction: column;
@@ -56,19 +54,35 @@
       background-color: #ccc;
     }
 
-    /* Ask less yazısı */
     .tagline {
       margin-top: 15px;
       font-size: 0.9rem;
       color: #ccc;
     }
 
-    /* Alt kısım */
     footer {
       text-align: center;
       padding: 20px;
       font-size: 0.8rem;
       color: #ccc;
+    }
+
+    /* Tablo stili */
+    table {
+      border-collapse: collapse;
+      width: 80%;
+      margin: 20px auto;
+      background-color: #111;
+    }
+
+    th, td {
+      border: 1px solid #444;
+      padding: 8px;
+      text-align: center;
+    }
+
+    th {
+      background-color: #222;
     }
   </style>
 </head>
@@ -77,14 +91,54 @@
   <h1>LIKE</h1>
 
   <div class="search-section">
-    <input type="text" placeholder="Enter player name...">
-    <button>ANALYZE</button>
+    <input type="text" id="playerInput" placeholder="Enter player name...">
+    <button onclick="showStats()">ANALYZE</button>
     <div class="tagline">Ask less. Get more.</div>
   </div>
+
+  <div id="statsTable"></div>
 
   <footer>
     We don’t care who you are.
   </footer>
+
+  <script>
+    function showStats() {
+      const player = document.getElementById("playerInput").value || "LeBron James";
+      
+      // Test verisi
+      const stats = [
+        { game: 1, points: 25, assists: 7, rebounds: 8, threes: 3 },
+        { game: 2, points: 30, assists: 9, rebounds: 10, threes: 4 },
+        { game: 3, points: 22, assists: 6, rebounds: 7, threes: 2 },
+        { game: 4, points: 18, assists: 8, rebounds: 5, threes: 1 },
+        { game: 5, points: 28, assists: 10, rebounds: 9, threes: 5 },
+      ];
+
+      let table = `<h2 style="text-align:center">${player} - Last 5 Games</h2>`;
+      table += `<table>
+                  <tr>
+                    <th>Game</th>
+                    <th>Points</th>
+                    <th>Assists</th>
+                    <th>Rebounds</th>
+                    <th>3 Pointers</th>
+                  </tr>`;
+
+      stats.forEach(s => {
+        table += `<tr>
+                    <td>${s.game}</td>
+                    <td>${s.points}</td>
+                    <td>${s.assists}</td>
+                    <td>${s.rebounds}</td>
+                    <td>${s.threes}</td>
+                  </tr>`;
+      });
+
+      table += `</table>`;
+      document.getElementById("statsTable").innerHTML = table;
+    }
+  </script>
 
 </body>
 </html>

@@ -2,39 +2,31 @@ export default async function handler(req, res) {
   const { player } = req.query;
 
   if (!player) {
-    return res.status(400).json({ error: "Player name is required" });
+    return res.status(400).json({ error: 'Player name is required' });
   }
 
   try {
-    const searchResponse = await fetch(`https://www.balldontlie.io/api/v1/players?search=${player}`);
+    // Oyuncu bilgilerini al
+    const searchResponse = await fetch(`https://www.balldontlie.io/api/v1/players?search=${encodeURIComponent(player)}`);
     const searchData = await searchResponse.json();
 
     if (!searchData.data || searchData.data.length === 0) {
-      return res.status(404).json({ error: "Player not found" });
+      return res.status(404).json({ error: 'Player not found' });
     }
 
     const playerId = searchData.data[0].id;
-    const playerFullName = `${searchData.data[0].first_name} ${searchData.data[0].last_name}`;
 
-    const gamesResponse = await fetch(`https://www.balldontlie.io/api/v1/stats?player_ids[]=${playerId}&per_page=10`);
-    const gamesData = await gamesResponse.json();
-
-    if (!gamesData.data || gamesData.data.length === 0) {
-      return res.status(404).json({ error: "No recent games found" });
-    }
+    // Oyuncunun son 10 maç istatistiklerini al
+    const statsResponse = await fetch(`https://www.balldontlie.io/api/v1/stats?player_ids[]=${playerId}&per_page=10`);
+    const statsData = await statsResponse.json();
 
     res.status(200).json({
-      player: playerFullName,
-      games: gamesData.data.map((game, index) => ({
-        game: index + 1,
-        points: game.pts,
-        assists: game.ast,
-        rebounds: game.reb,
-        threes: game.fg3m
-      }))
+      player: searchData.data[0],
+      stats: statsData.data
     });
 
   } catch (error) {
-    res.status(500).json({ error: "Failed to fetch player stats" });
+    console.error('Error fetching player stats:', error);
+    res.status(500).json({ error: 'Failed to fetch player stats' });
   }
 }

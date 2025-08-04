@@ -1,3 +1,4 @@
+// api/playerstats.js
 export default async function handler(req, res) {
   const { player } = req.query;
 
@@ -5,18 +6,27 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Player name is required' });
   }
 
+  // Girilen ismi temizle ve baş harfleri büyüt
+  const formattedName = player
+    .trim()
+    .toLowerCase()
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+
   try {
+    // RapidAPI key
     const apiKey = process.env.RAPIDAPI_KEY;
 
-    // RapidAPI Player Search endpoint
+    // Oyuncu arama endpoint'i
     const searchResponse = await fetch(
-      `https://api-basketball.p.rapidapi.com/players?search=${encodeURIComponent(player)}`,
+      `https://api-basketball.p.rapidapi.com/players?search=${encodeURIComponent(formattedName)}`,
       {
         method: 'GET',
         headers: {
-          'X-RapidAPI-Key': apiKey,
-          'X-RapidAPI-Host': 'api-basketball.p.rapidapi.com',
-        },
+          'x-rapidapi-host': 'api-basketball.p.rapidapi.com',
+          'x-rapidapi-key': apiKey
+        }
       }
     );
 
@@ -26,17 +36,18 @@ export default async function handler(req, res) {
       return res.status(404).json({ error: 'Player not found' });
     }
 
+    // İlk oyuncunun ID'sini al
     const playerId = searchData.response[0].id;
 
-    // RapidAPI Player Statistics endpoint
+    // Oyuncunun istatistiklerini çek
     const statsResponse = await fetch(
       `https://api-basketball.p.rapidapi.com/statistics/players/player/${playerId}`,
       {
         method: 'GET',
         headers: {
-          'X-RapidAPI-Key': apiKey,
-          'X-RapidAPI-Host': 'api-basketball.p.rapidapi.com',
-        },
+          'x-rapidapi-host': 'api-basketball.p.rapidapi.com',
+          'x-rapidapi-key': apiKey
+        }
       }
     );
 
@@ -44,8 +55,9 @@ export default async function handler(req, res) {
 
     res.status(200).json({
       player: searchData.response[0],
-      stats: statsData.response,
+      stats: statsData.response
     });
+
   } catch (error) {
     console.error('Error fetching player stats:', error);
     res.status(500).json({ error: 'Failed to fetch player stats' });

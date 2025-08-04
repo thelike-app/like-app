@@ -6,24 +6,25 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Oyuncu bilgilerini al
-    const searchResponse = await fetch(`https://www.balldontlie.io/api/v1/players?search=${encodeURIComponent(player)}`);
-    const searchData = await searchResponse.json();
+    // RapidAPI endpoint - oyuncu arama
+    const url = `https://api-basketball.p.rapidapi.com/players?search=${encodeURIComponent(player)}`;
+    const options = {
+      method: 'GET',
+      headers: {
+        'x-rapidapi-key': process.env.RAPIDAPI_KEY,
+        'x-rapidapi-host': 'api-basketball.p.rapidapi.com'
+      }
+    };
 
-    if (!searchData.data || searchData.data.length === 0) {
+    const response = await fetch(url, options);
+    const data = await response.json();
+
+    // API'den sonuç gelmezse hata döndür
+    if (!data || !data.response || data.response.length === 0) {
       return res.status(404).json({ error: 'Player not found' });
     }
 
-    const playerId = searchData.data[0].id;
-
-    // Oyuncunun son 10 maç istatistiklerini al
-    const statsResponse = await fetch(`https://www.balldontlie.io/api/v1/stats?player_ids[]=${playerId}&per_page=10`);
-    const statsData = await statsResponse.json();
-
-    res.status(200).json({
-      player: searchData.data[0],
-      stats: statsData.data
-    });
+    res.status(200).json(data);
 
   } catch (error) {
     console.error('Error fetching player stats:', error);

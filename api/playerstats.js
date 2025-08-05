@@ -11,8 +11,11 @@ export default async function handler(req, res) {
   const apiHost = "api-nba-v1.p.rapidapi.com";
 
   try {
+    // İsim formatını düzelt
+    const searchName = player.trim().toLowerCase();
+
     // 1️⃣ Oyuncuyu ara
-    const searchUrl = `https://${apiHost}/players?search=${encodeURIComponent(player)}`;
+    const searchUrl = `https://${apiHost}/players?search=${encodeURIComponent(searchName)}`;
     const searchResponse = await fetch(searchUrl, {
       method: "GET",
       headers: {

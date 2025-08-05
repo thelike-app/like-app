@@ -1,3 +1,4 @@
+// test update for redeploy
 // api/playerstats.js
 export default async function handler(req, res) {
   const { player } = req.query;

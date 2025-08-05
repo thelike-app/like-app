@@ -1,4 +1,4 @@
-// /api/playerstats.js
+// api/playerstats.js
 
 export default async function handler(req, res) {
   const { player } = req.query;
@@ -8,10 +8,14 @@ export default async function handler(req, res) {
   }
 
   try {
-    // 1. Oyuncuyu ara (balldontlie API)
+    // 1. Oyuncuyu ara (BallDontLie API)
     const searchResponse = await fetch(
       `https://api.balldontlie.io/v1/players?search=${encodeURIComponent(player)}`
     );
+
+    if (!searchResponse.ok) {
+      throw new Error(`Player search failed with status ${searchResponse.status}`);
+    }
 
     const searchData = await searchResponse.json();
 
@@ -25,6 +29,10 @@ export default async function handler(req, res) {
     const statsResponse = await fetch(
       `https://api.balldontlie.io/v1/stats?player_ids[]=${playerId}&seasons[]=2023`
     );
+
+    if (!statsResponse.ok) {
+      throw new Error(`Stats fetch failed with status ${statsResponse.status}`);
+    }
 
     const statsData = await statsResponse.json();
 

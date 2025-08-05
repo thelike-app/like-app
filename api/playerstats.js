@@ -1,4 +1,4 @@
-// api/playerstats.js
+// /api/playerstats.js
 
 export default async function handler(req, res) {
   const { player } = req.query;
@@ -10,12 +10,13 @@ export default async function handler(req, res) {
   try {
     // 1. Oyuncuyu ara (BallDontLie API)
     const searchResponse = await fetch(
-      `https://api.balldontlie.io/v1/players?search=${encodeURIComponent(player)}`
+      `https://api.balldontlie.io/v1/players?search=${encodeURIComponent(player)}`,
+      {
+        headers: {
+          "Authorization": process.env.BALLDONTLIE_API_KEY
+        }
+      }
     );
-
-    if (!searchResponse.ok) {
-      throw new Error(`Player search failed with status ${searchResponse.status}`);
-    }
 
     const searchData = await searchResponse.json();
 
@@ -27,22 +28,23 @@ export default async function handler(req, res) {
 
     // 2. Oyuncu istatistiklerini çek (2023 sezonu)
     const statsResponse = await fetch(
-      `https://api.balldontlie.io/v1/stats?player_ids[]=${playerId}&seasons[]=2023`
+      `https://api.balldontlie.io/v1/stats?player_ids[]=${playerId}&seasons[]=2023`,
+      {
+        headers: {
+          "Authorization": process.env.BALLDONTLIE_API_KEY
+        }
+      }
     );
-
-    if (!statsResponse.ok) {
-      throw new Error(`Stats fetch failed with status ${statsResponse.status}`);
-    }
 
     const statsData = await statsResponse.json();
 
-    res.status(200).json({
+    return res.status(200).json({
       player: searchData.data[0], // Oyuncu bilgileri
       stats: statsData.data       // İstatistikler
     });
 
   } catch (error) {
-    console.error("Error fetching player stats", error);
-    res.status(500).json({ error: "Failed to fetch player stats" });
+    console.error("Error fetching player stats:", error);
+    return res.status(500).json({ error: "Failed to fetch player stats" });
   }
 }

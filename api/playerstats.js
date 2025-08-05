@@ -1,3 +1,5 @@
+// like-app/api/playerstats.js
+
 export default async function handler(req, res) {
   const { player } = req.query;
 
@@ -6,11 +8,11 @@ export default async function handler(req, res) {
   }
 
   const apiKey = process.env.RAPIDAPI_KEY;
-  const apiHost = "api-basketball.p.rapidapi.com";
+  const apiHost = "api-nba-v1.p.rapidapi.com";
 
   try {
-    // Oyuncu arama
-    const searchUrl = `https://${apiHost}/players?search=${encodeURIComponent(player)}&season=2023-2024&league=12`;
+    // 1️⃣ Oyuncu arama
+    const searchUrl = `https://${apiHost}/players?search=${encodeURIComponent(player)}`;
     const searchResponse = await fetch(searchUrl, {
       method: "GET",
       headers: {
@@ -21,17 +23,15 @@ export default async function handler(req, res) {
 
     const searchData = await searchResponse.json();
 
-    // API dönüş formatına göre kontrol
     if (!searchData.response || searchData.response.length === 0) {
       return res.status(404).json({ error: "Player not found" });
     }
 
-    // İlk bulunan oyuncu bilgileri
-    const playerInfo = searchData.response[0].player;
-    const playerId = searchData.response[0].player.id;
+    const playerInfo = searchData.response[0];
+    const playerId = playerInfo.id;
 
-    // Oyuncu istatistikleri
-    const statsUrl = `https://${apiHost}/players/statistics?season=2023-2024&league=12&id=${playerId}`;
+    // 2️⃣ Oyuncu istatistikleri
+    const statsUrl = `https://${apiHost}/players/statistics?id=${playerId}&season=2023`;
     const statsResponse = await fetch(statsUrl, {
       method: "GET",
       headers: {

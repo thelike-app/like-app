@@ -1,3 +1,5 @@
+// api/playerstats.js
+
 export default async function handler(req, res) {
   const { player } = req.query;
 
@@ -9,7 +11,7 @@ export default async function handler(req, res) {
   const apiHost = "api-nba-v1.p.rapidapi.com";
 
   try {
-    // 1️⃣ Oyuncu arama
+    // 1️⃣ Oyuncuyu ara
     const searchUrl = `https://${apiHost}/players?search=${encodeURIComponent(player)}`;
     const searchResponse = await fetch(searchUrl, {
       method: "GET",
@@ -25,10 +27,11 @@ export default async function handler(req, res) {
       return res.status(404).json({ error: "Player not found" });
     }
 
+    // İlk eşleşmeyi al
     const playerInfo = searchData.response[0];
     const playerId = playerInfo.id;
 
-    // 2️⃣ Oyuncu istatistikleri
+    // 2️⃣ Oyuncu istatistiklerini çek
     const statsUrl = `https://${apiHost}/players/statistics?id=${playerId}&season=2023`;
     const statsResponse = await fetch(statsUrl, {
       method: "GET",

@@ -1,66 +1,54 @@
-// test update for redeploy
-// api/playerstats.js
 export default async function handler(req, res) {
   const { player } = req.query;
 
   if (!player) {
-    return res.status(400).json({ error: 'Player name is required' });
+    return res.status(400).json({ error: "Player name is required" });
   }
 
-  // Girilen ismi temizle ve baş harfleri büyüt
-  const formattedName = player
-    .trim()
-    .toLowerCase()
-    .split(' ')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ');
+  const apiKey = process.env.RAPIDAPI_KEY;
+  const apiHost = "api-basketball.p.rapidapi.com";
 
   try {
-    // RapidAPI key
-    const apiKey = process.env.RAPIDAPI_KEY;
-
-    // Oyuncu arama endpoint'i
-    const searchResponse = await fetch(
-      `https://api-basketball.p.rapidapi.com/players?search=${encodeURIComponent(formattedName)}`,
-      {
-        method: 'GET',
-        headers: {
-          'x-rapidapi-host': 'api-basketball.p.rapidapi.com',
-          'x-rapidapi-key': apiKey
-        }
+    // Oyuncu arama
+    const searchUrl = `https://${apiHost}/players?search=${encodeURIComponent(player)}&season=2023-2024&league=12`;
+    const searchResponse = await fetch(searchUrl, {
+      method: "GET",
+      headers: {
+        "X-RapidAPI-Key": apiKey,
+        "X-RapidAPI-Host": apiHost
       }
-    );
+    });
 
     const searchData = await searchResponse.json();
 
+    // API dönüş formatına göre kontrol
     if (!searchData.response || searchData.response.length === 0) {
-      return res.status(404).json({ error: 'Player not found' });
+      return res.status(404).json({ error: "Player not found" });
     }
 
-    // İlk oyuncunun ID'sini al
-    const playerId = searchData.response[0].id;
+    // İlk bulunan oyuncu bilgileri
+    const playerInfo = searchData.response[0].player;
+    const playerId = searchData.response[0].player.id;
 
-    // Oyuncunun istatistiklerini çek
-    const statsResponse = await fetch(
-      `https://api-basketball.p.rapidapi.com/statistics/players/player/${playerId}`,
-      {
-        method: 'GET',
-        headers: {
-          'x-rapidapi-host': 'api-basketball.p.rapidapi.com',
-          'x-rapidapi-key': apiKey
-        }
+    // Oyuncu istatistikleri
+    const statsUrl = `https://${apiHost}/players/statistics?season=2023-2024&league=12&id=${playerId}`;
+    const statsResponse = await fetch(statsUrl, {
+      method: "GET",
+      headers: {
+        "X-RapidAPI-Key": apiKey,
+        "X-RapidAPI-Host": apiHost
       }
-    );
+    });
 
     const statsData = await statsResponse.json();
 
     res.status(200).json({
-      player: searchData.response[0],
+      player: playerInfo,
       stats: statsData.response
     });
 
   } catch (error) {
-    console.error('Error fetching player stats:', error);
-    res.status(500).json({ error: 'Failed to fetch player stats' });
+    console.error("Error fetching player stats:", error);
+    res.status(500).json({ error: "Failed to fetch player stats" });
   }
 }

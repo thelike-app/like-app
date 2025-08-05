@@ -1,38 +1,38 @@
 // /api/playerstats.js
 
 export default async function handler(req, res) {
-    const { player } = req.query;
+  const { player } = req.query;
 
-    if (!player) {
-        return res.status(400).json({ error: "Player name is required" });
+  if (!player) {
+    return res.status(400).json({ error: "Player name is required" });
+  }
+
+  try {
+    // 1. Oyuncu ara (BallDontLie API)
+    const searchResponse = await fetch(
+      `https://www.balldontlie.io/api/v1/players?search=${encodeURIComponent(player)}`
+    );
+    const searchData = await searchResponse.json();
+
+    if (!searchData.data || searchData.data.length === 0) {
+      return res.status(404).json({ error: "Player not found" });
     }
 
-    try {
-        // 1. Oyuncuyu ara (Balldontlie API)
-        const searchResponse = await fetch(
-            `https://www.balldontlie.io/api/v1/players?search=${encodeURIComponent(player)}`
-        );
-        const searchData = await searchResponse.json();
+    const playerId = searchData.data[0].id;
 
-        if (!searchData.data || searchData.data.length === 0) {
-            return res.status(404).json({ error: "Player not found" });
-        }
+    // 2. Oyuncu istatistiklerini çek (2023 sezonu)
+    const statsResponse = await fetch(
+      `https://www.balldontlie.io/api/v1/stats?player_ids[]=${playerId}&seasons[]=2023`
+    );
+    const statsData = await statsResponse.json();
 
-        const playerId = searchData.data[0].id;
+    res.status(200).json({
+      player: searchData.data[0], // Oyuncu bilgileri
+      stats: statsData.data       // İstatistikler
+    });
 
-        // 2. Oyuncu istatistiklerini çek (2023 sezonu)
-        const statsResponse = await fetch(
-            `https://www.balldontlie.io/api/v1/stats?player_ids[]=${playerId}&seasons[]=2023`
-        );
-        const statsData = await statsResponse.json();
-
-        res.status(200).json({
-            player: searchData.data[0], // Oyuncu bilgileri
-            stats: statsData.data       // İstatistikler
-        });
-
-    } catch (error) {
-        console.error("Error fetching player stats", error);
-        res.status(500).json({ error: "Failed to fetch player stats" });
-    }
+  } catch (error) {
+    console.error("Error fetching player stats", error);
+    res.status(500).json({ error: "Failed to fetch player stats" });
+  }
 }

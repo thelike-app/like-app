@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>LIKE - Sports Statistics</title>
+  <style>
+    body {
+      background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 100%);
+      color: white;
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    
+    h1 {
+      margin-top: 60px;
+      font-size: 64px;
+      letter-spacing: 3px;
+      font-weight: 300;
+      background: linear-gradient(45deg, #fff, #ccc);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .search-container {
+      margin: 40px 0;
+      position: relative;
+    }
+    
+    input {
+      padding: 15px 20px;
+      font-size: 18px;
+      width: 350px;
+      max-width: 90%;
+      border: 2px solid #333;
+      border-radius: 25px;
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+      text-align: center;
+      backdrop-filter: blur(10px);
+      transition: all 0.3s ease;
+    }
+    
+    input:focus {
+      outline: none;
+      border-color: #4CAF50;
+      box-shadow: 0 0 20px rgba(76, 175, 80, 0.3);
+    }
+    
+    input::placeholder {
+      color: #aaa;
+    }
+    
+    .sport-selector {
+      margin: 20px 0;
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    
+    .sport-btn {
+      padding: 8px 16px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid #333;
+      border-radius: 20px;
+      color: white;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 14px;
+    }
+    
+    .sport-btn:hover, .sport-btn.active {
+      background: #4CAF50;
+      border-color: #4CAF50;
+      transform: translateY(-2px);
+    }
+    
+    button {
+      margin-top: 20px;
+      padding: 15px 40px;
+      font-size: 18px;
+      background: linear-gradient(45deg, #4CAF50, #45a049);
+      color: white;
+      border: none;
+      border-radius: 25px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+    }
+    
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+    }
+    
+    button:disabled {
+      background: #666;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+    
+    .tagline {
+      margin-top: 15px;
+      font-size: 16px;
+      color: #888;
+      font-weight: 300;
+    }
+    
+    .footer {
+      position: fixed;
+      bottom: 20px;
+      width: 100%;
+      font-size: 12px;
+      color: #666;
+    }
+    
+    #results {
+      margin-top: 40px;
+      text-align: left;
+      max-width: 900px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    
+    .loading {
+      display: none;
+      text-align: center;
+      color: #4CAF50;
+      font-size: 18px;
+      margin: 20px 0;
+    }
+    
+    .loading.show {
+      display: block;
+    }
+    
+    .spinner {
+      border: 3px solid #333;
+      border-top: 3px solid #4CAF50;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 10px;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    .player-card {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid #333;
+      border-radius: 15px;
+      padding: 20px;
+      margin: 20px 0;
+      backdrop-filter: blur(10px);
+    }
+    
+    .player-info {
+      text-align: center;
+      margin-bottom: 20px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid #333;
+    }
+    
+    .player-name {
+      font-size: 24px;
+      font-weight: bold;
+      color: #4CAF50;
+      margin-bottom: 10px;
+    }
+    
+    .player-details {
+      color: #ccc;
+      font-size: 16px;
+    }
+    
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 15px;
+      margin-top: 20px;
+    }
+    
+    .stat-card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid #444;
+      border-radius: 10px;
+      padding: 15px;
+      transition: all 0.3s ease;
+    }
+    
+    .stat-card:hover {
+      transform: translateY(-3px);
+      border-color: #4CAF50;
+      box-shadow: 0 5px 15px rgba(76, 175, 80, 0.2);
+    }
+    
+    .stat-header {
+      font-size: 14px;
+      color: #888;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    
+    .stat-value {
+      font-size: 18px;
+      font-weight: bold;
+      color: white;
+    }
+    
+    .error {
+      background: rgba(255, 0, 0, 0.1);
+      border: 1px solid #ff4444;
+      border-radius: 10px;
+      padding: 20px;
+      color: #ff6666;
+      text-align: center;
+      margin: 20px 0;
+    }
+    
+    .no-data {
+      text-align: center;
+      color: #888;
+      font-style: italic;
+      margin: 40px 0;
+    }
+    
+    @media (max-width: 768px) {
+      h1 {
+        font-size: 48px;
+        margin-top: 40px;
+      }
+      
+      input {
+        width: 280px;
+        font-size: 16px;
+      }
+      
+      .sport-selector {
+        margin: 15px 0;
+      }
+      
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .container {
+        padding: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>LIKE</h1>
+    
+    <div class="search-container">
+      <input type="text" id="playerInput" placeholder="Enter athlete name (e.g., LeBron James, Messi, Federer)"/>
+      
+      <div class="sport-selector">
+        <div class="sport-btn active" data-sport="all">All Sports</div>
+        <div class="sport-btn" data-sport="football">Football</div>
+        <div class="sport-btn" data-sport="basketball">Basketball</div>
+        <div class="sport-btn" data-sport="baseball">Baseball</div>
+        <div class="sport-btn" data-sport="hockey">Hockey</div>
+        <div class="sport-btn" data-sport="tennis">Tennis</div>
+        <div class="sport-btn" data-sport="mma">MMA</div>
+        <div class="sport-btn" data-sport="formula1">Formula 1</div>
+      </div>
+      
+      <button onclick="analyzePlayer()" id="analyzeBtn">ANALYZE</button>
+    </div>
+    
+    <div class="tagline">Ask less. Get more.</div>
+    
+    <div class="loading" id="loading">
+      <div class="spinner"></div>
+      <div>Searching for athlete statistics...</div>
+    </div>
+
+    <div id="results"></div>
+  </div>
+
+  <div class="footer">
+    We don't care who you are.
+  </div>
+
+  <script src="api/sports-api.js"></script>
+  <script>
+    let selectedSport = 'all';
+    
+    // Sport selector functionality
+    document.querySelectorAll('.sport-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('.sport-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        selectedSport = this.dataset.sport;
+      });
+    });
+    
+    // Enter key support
+    document.getElementById('playerInput').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        analyzePlayer();
+      }
+    });
+    
+    async function analyzePlayer() {
+      const playerName = document.getElementById("playerInput").value.trim();
+      const resultsDiv = document.getElementById("results");
+      const loadingDiv = document.getElementById("loading");
+      const analyzeBtn = document.getElementById("analyzeBtn");
+      
+      if (!playerName) {
+        showError("Please enter an athlete name");
+        return;
+      }
+      
+      // Show loading state
+      loadingDiv.classList.add('show');
+      analyzeBtn.disabled = true;
+      resultsDiv.innerHTML = '';
+      
+      try {
+        const response = await fetch(`/api/sports-stats?player=${encodeURIComponent(playerName)}&sport=${selectedSport}`);
+        const data = await response.json();
+        
+        if (data.error) {
+          showError(data.error);
+        } else if (data.success) {
+          displayResults(data);
+        } else {
+          showError("No data found for this athlete");
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        showError("Failed to fetch athlete statistics. Please try again.");
+      } finally {
+        loadingDiv.classList.remove('show');
+        analyzeBtn.disabled = false;
+      }
+    }
+    
+    function showError(message) {
+      const resultsDiv = document.getElementById("results");
+      resultsDiv.innerHTML = `<div class="error">${message}</div>`;
+    }
+    
+    function displayResults(data) {
+      const resultsDiv = document.getElementById("results");
+      
+      if (!data.athlete || !data.statistics) {
+        resultsDiv.innerHTML = '<div class="no-data">No statistics available for this athlete</div>';
+        return;
+      }
+      
+      const athlete = data.athlete;
+      const stats = data.statistics;
+      
+      let html = `
+        <div class="player-card">
+          <div class="player-info">
+            <div class="player-name">${athlete.name}</div>
+            <div class="player-details">
+              ${athlete.team ? `Team: ${athlete.team}` : ''}
+              ${athlete.position ? ` | Position: ${athlete.position}` : ''}
+              ${athlete.sport ? ` | Sport: ${athlete.sport}` : ''}
+            </div>
+          </div>
+          
+          <div class="stats-grid">
+      `;
+      
+      // Display last 10 events/games statistics
+      if (stats.recent_events && stats.recent_events.length > 0) {
+        stats.recent_events.slice(0, 10).forEach((event, index) => {
+          html += `
+            <div class="stat-card">
+              <div class="stat-header">Event ${index + 1} - ${event.date || 'Recent'}</div>
+              <div class="stat-value">${event.opponent || event.event_name || 'vs Opponent'}</div>
+              <div style="margin-top: 10px; font-size: 14px; color: #ccc;">
+                ${formatEventStats(event)}
+              </div>
+            </div>
+          `;
+        });
+      } else {
+        html += '<div class="no-data">No recent event statistics available</div>';
+      }
+      
+      html += `
+          </div>
+        </div>
+      `;
+      
+      resultsDiv.innerHTML = html;
+    }
+    
+    function formatEventStats(event) {
+      let statsText = '';
+      
+      // Common statistics formatting
+      if (event.points !== undefined) statsText += `Points: ${event.points}<br>`;
+      if (event.goals !== undefined) statsText += `Goals: ${event.goals}<br>`;
+      if (event.assists !== undefined) statsText += `Assists: ${event.assists}<br>`;
+      if (event.rebounds !== undefined) statsText += `Rebounds: ${event.rebounds}<br>`;
+      if (event.saves !== undefined) statsText += `Saves: ${event.saves}<br>`;
+      if (event.position !== undefined) statsText += `Position: ${event.position}<br>`;
+      if (event.time !== undefined) statsText += `Time: ${event.time}<br>`;
+      if (event.result !== undefined) statsText += `Result: ${event.result}<br>`;
+      
+      return statsText || 'Statistics not available';
+    }
+  </script>
+</body>
+</html>
+
